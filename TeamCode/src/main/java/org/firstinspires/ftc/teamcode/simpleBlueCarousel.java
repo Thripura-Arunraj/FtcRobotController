@@ -167,7 +167,6 @@ public class simpleBlueCarousel extends LinearOpMode {
                         c.Position = c.LEAVE_AS_IS;
                     }
                 }
-
             } catch (InterruptedException interruptedException) {
                 interruptedException.printStackTrace();
             }
