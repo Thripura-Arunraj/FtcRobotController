@@ -21,9 +21,10 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -31,17 +32,18 @@ import org.openftc.apriltag.AprilTagDetection;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
-import org.openftc.easyopencv.OpenCvInternalCamera;
 
 import java.util.ArrayList;
 
-@TeleOp
+@Autonomous
 public class AprilTagAutonomousInitDetectionExample extends LinearOpMode
 {
     OpenCvCamera camera;
     AprilTagDetectionPipeline aprilTagDetectionPipeline;
-    private DcMotor RightFront, RightBack, LeftFront, Intake, LeftBack, Lifter;
+    private DcMotor RightForward, RightBack, LeftForward, Intake, LeftBack, Lifter;
+    public final int Forward = 0, BACKWARD = 1, LEFT = 2, RIGHT = 3, UPRIGHT= 4, UPLEFT = 5, DOWNRIGHT = 6, DOWNLEFT = 7, LRIGHT = 8, RLEFT = 9, FBACKWARD = 10, FFORWARD = 11;
     private Servo Deposit;
+    Caruso c = new Caruso();
 
     static final double FEET_PER_METER = 3.28084;
 
@@ -58,7 +60,10 @@ public class AprilTagAutonomousInitDetectionExample extends LinearOpMode
     double tagsize = 0.166;
 
     // 19, 0, 1
-    int ID_TAG_OF_INTEREST = 19; // Tag ID 18 from the 36h11 family
+    int config1 = 19; // Tag ID 18 from the 36h11 family
+    int config2 = 0;
+    int config3 = 9;
+    int configuration = 2;
 
     AprilTagDetection tagOfInterest = null;
 
@@ -69,24 +74,23 @@ public class AprilTagAutonomousInitDetectionExample extends LinearOpMode
         camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam"), cameraMonitorViewId);
         aprilTagDetectionPipeline = new AprilTagDetectionPipeline(tagsize, fx, fy, cx, cy);
 
-        RightFront = hardwareMap.dcMotor.get("RightFront");
+        // Turner.setPositon(0);
+        RightForward = hardwareMap.dcMotor.get("RightFront");
         RightBack = hardwareMap.dcMotor.get("RightBack");
-        LeftFront = hardwareMap.dcMotor.get("LeftFront");
+        LeftForward = hardwareMap.dcMotor.get("LeftFront");
         LeftBack = hardwareMap.dcMotor.get("LeftBack");
         Lifter = hardwareMap.dcMotor.get("Lifter");
 
         Deposit = hardwareMap.get(Servo.class, "Deposit");
 
-        RightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        RightForward.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         RightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        LeftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        LeftForward.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         LeftBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         Deposit.setDirection(Servo.Direction.REVERSE);
+        RightBack.setDirection(DcMotorSimple.Direction.REVERSE);
         // Turner.setDirection(Servo.Direction.REVERSE);
-
-        Deposit.setPosition(0);
-        // Turner.setPositon(0);
 
         camera.setPipeline(aprilTagDetectionPipeline);
         camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
@@ -120,8 +124,15 @@ public class AprilTagAutonomousInitDetectionExample extends LinearOpMode
 
                 for(AprilTagDetection tag : currentDetections)
                 {
-                    if(tag.id == ID_TAG_OF_INTEREST)
+                    if(tag.id == config1 || tag.id == config2 || tag.id == config3)
                     {
+                        if(tag.id == config1)
+                            configuration = 1;
+                        if(tag.id == config2)
+                            configuration = 2;
+                        if(tag.id == config3)
+                            configuration = 3;
+
                         tagOfInterest = tag;
                         tagFound = true;
                         break;
@@ -132,6 +143,7 @@ public class AprilTagAutonomousInitDetectionExample extends LinearOpMode
                 {
                     telemetry.addLine("Tag of interest is in sight!\n\nLocation data:");
                     tagToTelemetry(tagOfInterest);
+                    telemetry.addData("configuration", configuration);
                 }
                 else
                 {
@@ -194,6 +206,7 @@ public class AprilTagAutonomousInitDetectionExample extends LinearOpMode
              * Insert your autonomous code here, presumably running some default configuration
              * since the tag was never sighted during INIT
              */
+            configuration = 2;
         }
         else
         {
@@ -218,14 +231,65 @@ public class AprilTagAutonomousInitDetectionExample extends LinearOpMode
 
 
         /* You wouldn't have this in your autonomous, this is just to prevent the sample from ending */
-        while (opModeIsActive()) {
-            RightBack.setTargetPosition(-100);
-            LeftFront.setTargetPosition(100);
-            RightFront.setTargetPosition(100);
-            LeftBack.setTargetPosition(100);
+        if (opModeIsActive()) {
+            //moveEncoders(BACKWARD, 0.45, 250);
+            moveWithTimeForward(1650);
+            if (configuration == 3) {
+                //moveWithTimeForward(300);
+            }
+            else if (configuration == 2) {
+                moveWithTimeBackward(700);
+            }
+            else if (configuration == 1){
+                moveWithTimeBackward(1400);
+            }
+            else {}
+            strafeLeft(700);
+            if(configuration == 2)
+                moveWithTimeForward(100);
 
-            RightBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         }
+    }
+
+    public void moveWithTimeForward(int milliseconds) {
+        double power = .2;
+        LeftForward.setPower(-power);
+        LeftBack.setPower(-power);
+        RightForward.setPower(-power);
+        RightBack.setPower(-power);
+        sleep(milliseconds);
+        LeftForward.setPower(0);
+        LeftBack.setPower(0);
+        RightForward.setPower(0);
+        RightBack.setPower(0);
+
+    }
+
+    public void moveWithTimeBackward(int milliseconds) {
+        double power = -0.32;
+        LeftForward.setPower(-power);
+        LeftBack.setPower(-power);
+        RightForward.setPower(-power);
+        RightBack.setPower(-power);
+        sleep(milliseconds);
+        LeftForward.setPower(0);
+        LeftBack.setPower(0);
+        RightForward.setPower(0);
+        RightBack.setPower(0);
+
+    }
+
+    public void strafeLeft(int milliseconds) {
+        double power = 0.65;
+        LeftForward.setPower(power);
+        LeftBack.setPower(-power);
+        RightForward.setPower(-power);
+        RightBack.setPower(power);
+        sleep(milliseconds);
+        LeftForward.setPower(0);
+        LeftBack.setPower(0);
+        RightForward.setPower(0);
+        RightBack.setPower(0);
     }
 
     void tagToTelemetry(AprilTagDetection detection)
@@ -238,4 +302,68 @@ public class AprilTagAutonomousInitDetectionExample extends LinearOpMode
         telemetry.addLine(String.format("Rotation Pitch: %.2f degrees", Math.toDegrees(detection.pose.pitch)));
         telemetry.addLine(String.format("Rotation Roll: %.2f degrees", Math.toDegrees(detection.pose.roll)));
     }
+    public void moveEncoders(int Direction, double Power, int TargetPosition) {
+        RightBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        //LeftForward.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        if (Direction == Forward) {
+            RightBack.setTargetPosition(TargetPosition);
+
+            RightBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            while (!isStopRequested() && Math.abs(RightBack.getCurrentPosition()) <= Math.abs(RightBack.getTargetPosition())) {
+
+                LeftForward.setPower(Power);
+                LeftBack.setPower(Power);
+                RightForward.setPower(Power);
+                RightBack.setPower(Power);
+
+            }
+
+        } else if (Direction == BACKWARD) {
+            RightBack.setTargetPosition(-TargetPosition);
+
+            RightBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            while (!isStopRequested() && Math.abs(RightBack.getCurrentPosition()) <= Math.abs(RightBack.getTargetPosition())) {
+                LeftForward.setPower(-Power);
+                LeftBack.setPower(-Power);
+                RightForward.setPower(-Power);
+                RightBack.setPower(-Power);
+            }
+
+        } else if (Direction == LEFT) {
+            RightForward.setTargetPosition(TargetPosition);
+
+            RightForward.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            while (!isStopRequested() && Math.abs( RightForward.getCurrentPosition()) <= Math.abs(RightForward.getTargetPosition())) {
+
+                LeftForward.setPower(-Power);
+                LeftBack.setPower(Power);
+                RightForward.setPower(Power);
+                RightBack.setPower(-Power);
+            }
+
+        } else if (Direction == RIGHT) {
+            RightForward.setTargetPosition(-TargetPosition);
+
+            RightForward.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            while (!isStopRequested() && Math.abs(RightForward.getCurrentPosition()) <= Math.abs(RightForward.getTargetPosition())) {
+
+                LeftForward.setPower(Power);
+                LeftBack.setPower(-Power);
+                RightForward.setPower(-Power);
+                RightBack.setPower(Power);
+            }
+
+        }
+
+        LeftForward.setPower(0);
+        LeftBack.setPower(0);
+        RightForward.setPower(0);
+        RightBack.setPower(0);
+    }
+
 }

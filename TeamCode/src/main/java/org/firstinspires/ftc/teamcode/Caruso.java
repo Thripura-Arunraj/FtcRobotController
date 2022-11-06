@@ -38,11 +38,11 @@ import java.util.List;
 
 public class Caruso{
 
-    public DcMotorEx LeftForward, RightForward, LeftBack, RightBack, Arm, Intake, Carousel;
-    public DcMotorEx Turber;
+    public DcMotorEx LeftForward, RightForward, LeftBack, RightBack, Arm, Intake, Carousel, ConeLift;
+    public DcMotorEx Turber, Lifter;
     public DistanceSensor LeftDistance, RightDistance, FrontDistance, eled;
     public TouchSensor lLimit, rlimit, armTouch, armRLimit, armLLimit;
-    private Servo dep;
+    private Servo dep, Deposit;
 
     //UTILITY VARIABLES
     public final int Forward = 0, BACKWARD = 1, LEFT = 2, RIGHT = 3, UPRIGHT= 4, UPLEFT = 5, DOWNRIGHT = 6, DOWNLEFT = 7, LRIGHT = 8, RLEFT = 9, FBACKWARD = 10, FFORWARD = 11;
@@ -116,31 +116,10 @@ public class Caruso{
     private void initialize(HardwareMap hwMap){
 
         /* DRIVE MOTORS */
-        this.LeftForward = hwMap.get(DcMotorEx.class, "LeftForward");
-        this.RightForward = hwMap.get(DcMotorEx.class, "RightForward");
+        this.LeftForward = hwMap.get(DcMotorEx.class, "LeftFront");
+        this.RightForward = hwMap.get(DcMotorEx.class, "RightFront");
         this.LeftBack = hwMap.get(DcMotorEx.class, "LeftBack");
         this.RightBack = hwMap.get(DcMotorEx.class, "RightBack");
-
-        //SERVO
-        this.dep = hwMap.get(Servo.class, "Deposit");
-
-        /* Attachments */
-        this.Carousel = hwMap.get(DcMotorEx.class,"Carousel");
-        this.Turber = hwMap.get(DcMotorEx.class,"Turret");
-        this.Intake = hwMap.get(DcMotorEx.class,"Intake");
-        this.Arm = hwMap.get(DcMotorEx.class, "Arm");
-
-        /*Sensors*/
-        this.LeftDistance = hwMap.get(DistanceSensor.class, "LeftDistance");
-        this.RightDistance = hwMap.get(DistanceSensor.class, "RightDistance");
-        this.FrontDistance = hwMap.get(DistanceSensor.class, "FrontDistance");
-        this.lLimit = hwMap.get(TouchSensor.class, "llimit");
-        this.rlimit = hwMap.get(TouchSensor.class, "rlimit");
-        this.armTouch = hwMap.get(TouchSensor.class, "armTouch");
-        this.eled = hwMap.get(DistanceSensor.class, "ElementDistance");
-        this.armRLimit = hwMap.get(TouchSensor.class, "armRLimit");
-        this.armLLimit = hwMap.get(TouchSensor.class, "armLLimit");
-
 
         /*IMU INIT */
         BNO055IMU.Parameters imuParameters = new BNO055IMU.Parameters();
@@ -199,23 +178,10 @@ public class Caruso{
         LeftForward.setDirection(DcMotor.Direction.REVERSE);
         LeftBack.setDirection(DcMotor.Direction.REVERSE);
 
-        Arm.setDirection(DcMotorSimple.Direction.REVERSE);
-
         RightForward.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         RightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         LeftForward.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         LeftBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        Arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-        Turber.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-        Turber.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-        Carousel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-       // Carousel.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-        Turber.setTargetPositionTolerance(22);
-        Arm.setTargetPositionTolerance(20);
 
         telemetry.addLine("DONE");
         telemetry.update();
@@ -779,6 +745,20 @@ public class Caruso{
         stopMotors();
     }
 
+    public void moveConeLift(double power, int TargetPosition) {
+        ConeLift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        runtime.reset();
+
+        ConeLift.setTargetPosition(TargetPosition);
+        ConeLift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        while (!isStopRequested() && Math.abs(ConeLift.getCurrentPosition()) <= Math.abs(ConeLift.getTargetPosition())) {
+
+                ConeLift.setPower(power);
+                telemetry.addData("velocity", ConeLift.getVelocity());
+                encodTelem();
+        }
+    }
     public void veloMoveEncoders(int Direction, double Power, int TargetPosition, double desiredAngle) {
         LeftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         LeftForward.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
