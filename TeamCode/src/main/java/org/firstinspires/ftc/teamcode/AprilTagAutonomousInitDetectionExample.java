@@ -43,7 +43,7 @@ public class AprilTagAutonomousInitDetectionExample extends LinearOpMode
     private DcMotor RightForward, RightBack, LeftForward, Intake, LeftBack, Lifter;
     public final int Forward = 0, BACKWARD = 1, LEFT = 2, RIGHT = 3, UPRIGHT= 4, UPLEFT = 5, DOWNRIGHT = 6, DOWNLEFT = 7, LRIGHT = 8, RLEFT = 9, FBACKWARD = 10, FFORWARD = 11;
     private Servo Deposit;
-    Caruso c = new Caruso();
+    Caruso c = new Caruso(hardwareMap, telemetry);
 
     static final double FEET_PER_METER = 3.28084;
 
