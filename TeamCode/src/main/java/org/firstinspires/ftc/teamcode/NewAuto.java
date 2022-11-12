@@ -28,6 +28,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.navigation.Rotation;
 import org.openftc.apriltag.AprilTagDetection;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
@@ -36,7 +37,7 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 import java.util.ArrayList;
 
 @Autonomous
-public class AprilTagAutonomousInitDetectionExample extends LinearOpMode
+public class NewAuto extends LinearOpMode
 {
     OpenCvCamera camera;
     AprilTagDetectionPipeline aprilTagDetectionPipeline;
@@ -89,9 +90,10 @@ public class AprilTagAutonomousInitDetectionExample extends LinearOpMode
         LeftForward.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         LeftBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-//        Deposit.setDirection(Servo.Direction.REVERSE);
-        RightBack.setDirection(DcMotorSimple.Direction.REVERSE);
-        // Turner.setDirection(Servo.Direction.REVERSE);
+        LeftBack.setDirection(DcMotorSimple.Direction.REVERSE);
+        LeftForward.setDirection(DcMotorSimple.Direction.REVERSE);
+        RightForward.setDirection(DcMotorSimple.Direction.REVERSE);
+        RightBack.setDirection(DcMotorSimple.Direction.FORWARD);
 
         camera.setPipeline(aprilTagDetectionPipeline);
         camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
@@ -214,23 +216,83 @@ public class AprilTagAutonomousInitDetectionExample extends LinearOpMode
 
         /* You wouldn't have this in your autonomous, this is just to prevent the sample from ending */
         if (opModeIsActive()) {
-            //moveEncoders(BACKWARD, 0.45, 250);
-            moveWithTimeForward(1650);
+            //Move forward for 30 inches with Back distance sensors
+            //30 inches : LB = -356, RB = 343, LF = -334, RF = -362
+            //30 inches : LB = -359, RB = 356, LF = -342, RF = -368
+            //Failsafe with encoder - Stop at encoder value ~340
+            move(FORWARD, 18 0, 0.2);
+
             if (configuration == 3) {
-                //moveWithTimeForward(300);
+
+                //Turn 90 right with IMU
+                sleep(7000);
+                //Move forward until Back distance sensors read 52 inches
+                //Failsafe with encoder
+                move(FORWARD, 120, 0.2);
             }
             else if (configuration == 2) {
-                moveWithTimeBackward(700);
+
             }
             else if (configuration == 1){
-                moveWithTimeBackward(1400);
+
+                //Turn 90 right with IMU
+                sleep(7000);
+                //Move backward until Back distance sensors read 3 inches
+                //Failsafe with encoder
+                move(BACKWARD, 180, 0.2);
             }
-            else {}
-            strafeLeft(700);
-            if(configuration == 2)
-                moveWithTimeForward(100);
 
         }
+    }
+    public void move(int direction, int ticks, double power){
+
+        LeftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        RightBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        LeftForward.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        RightForward.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        if(direction == FORWARD) {
+            LeftForward.setTargetPosition(ticks);
+            RightForward.setTargetPosition(ticks);
+            LeftBack.setTargetPosition(ticks);
+            RightBack.setTargetPosition(ticks);
+        }
+
+        if(direction == BACKWARD) {
+            LeftForward.setTargetPosition(-ticks);
+            RightForward.setTargetPosition(-ticks);
+            LeftBack.setTargetPosition(-ticks);
+            RightBack.setTargetPosition(-ticks);
+        }
+        //set target position
+
+        // set power
+        LeftBack.setPower(power);
+        RightBack.setPower(power);
+        LeftForward.setPower(power);
+        RightForward.setPower(power);
+
+        //set the motors to RUN_TO_POSITION
+        LeftForward.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        RightForward.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        LeftBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        RightBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        while (LeftForward.isBusy() && RightForward.isBusy() && LeftBack.isBusy() && RightBack.isBusy()) {
+            telemetry.addData("Path", "Driving 18 inches");
+            telemetry.addData("LB", LeftBack.getCurrentPosition());
+            telemetry.addData("RB", RightBack.getCurrentPosition());
+            telemetry.addData("LF", LeftForward.getCurrentPosition());
+            telemetry.addData("RF", RightForward.getCurrentPosition());
+            telemetry.update();
+
+        }
+
+        //Stop all motion
+        LeftForward.setPower(0);
+        RightForward.setPower(0);
+        LeftBack.setPower(0);
+        RightBack.setPower(0);
     }
 
     public void moveWithTimeForward(int milliseconds) {
