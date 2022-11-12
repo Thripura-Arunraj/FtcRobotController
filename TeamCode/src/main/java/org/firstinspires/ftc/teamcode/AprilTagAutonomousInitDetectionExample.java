@@ -42,7 +42,7 @@ public class AprilTagAutonomousInitDetectionExample extends LinearOpMode
     AprilTagDetectionPipeline aprilTagDetectionPipeline;
     private DcMotor RightForward, RightBack, LeftForward, Intake, LeftBack, Lifter;
     public final int Forward = 0, BACKWARD = 1, LEFT = 2, RIGHT = 3, UPRIGHT= 4, UPLEFT = 5, DOWNRIGHT = 6, DOWNLEFT = 7, LRIGHT = 8, RLEFT = 9, FBACKWARD = 10, FFORWARD = 11;
-//    private Servo Deposit;
+    //    private Servo Deposit;
     Caruso c = new Caruso(hardwareMap, telemetry);
 
     static final double FEET_PER_METER = 3.28084;
@@ -233,26 +233,35 @@ public class AprilTagAutonomousInitDetectionExample extends LinearOpMode
         /* You wouldn't have this in your autonomous, this is just to prevent the sample from ending */
         if (opModeIsActive()) {
             //moveEncoders(BACKWARD, 0.45, 250);
-            moveWithTimeForward(1650);
+            moveWithTimeForward(1500);
             if (configuration == 3) {
                 //moveWithTimeForward(300);
+                sleep(1000);
             }
             else if (configuration == 2) {
                 moveWithTimeBackward(700);
+                sleep(1000);
             }
             else if (configuration == 1){
-                moveWithTimeBackward(1400);
+                moveWithTimeBackward(1500);
+                sleep(1000);
             }
             else {}
-            strafeLeft(700);
-            if(configuration == 2)
-                moveWithTimeForward(100);
+
+            if(configuration == 2 || configuration ==1)
+                strafeLeft(1700);
+            else
+                strafeLeft(1000);
+            moveWithTimeForward(300);
+
+            if(configuration == 3)
+                strafeLeft(600);
 
         }
     }
 
     public void moveWithTimeForward(int milliseconds) {
-        double power = .2;
+        double power = .22;
         LeftForward.setPower(-power);
         LeftBack.setPower(-power);
         RightForward.setPower(-power);
@@ -266,7 +275,7 @@ public class AprilTagAutonomousInitDetectionExample extends LinearOpMode
     }
 
     public void moveWithTimeBackward(int milliseconds) {
-        double power = -0.32;
+        double power = -0.22;
         LeftForward.setPower(-power);
         LeftBack.setPower(-power);
         RightForward.setPower(-power);
@@ -280,7 +289,7 @@ public class AprilTagAutonomousInitDetectionExample extends LinearOpMode
     }
 
     public void strafeLeft(int milliseconds) {
-        double power = 0.65;
+        double power = 0.7;
         LeftForward.setPower(power);
         LeftBack.setPower(-power);
         RightForward.setPower(-power);
