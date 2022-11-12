@@ -42,7 +42,7 @@ public class AprilTagAutonomousInitDetectionExample extends LinearOpMode
     AprilTagDetectionPipeline aprilTagDetectionPipeline;
     private DcMotor RightForward, RightBack, LeftForward, Intake, LeftBack, Lifter;
     public final int Forward = 0, BACKWARD = 1, LEFT = 2, RIGHT = 3, UPRIGHT= 4, UPLEFT = 5, DOWNRIGHT = 6, DOWNLEFT = 7, LRIGHT = 8, RLEFT = 9, FBACKWARD = 10, FFORWARD = 11;
-    private Servo Deposit;
+//    private Servo Deposit;
     Caruso c = new Caruso(hardwareMap, telemetry);
 
     static final double FEET_PER_METER = 3.28084;
@@ -81,14 +81,14 @@ public class AprilTagAutonomousInitDetectionExample extends LinearOpMode
         LeftBack = hardwareMap.dcMotor.get("LeftBack");
         Lifter = hardwareMap.dcMotor.get("Lifter");
 
-        Deposit = hardwareMap.get(Servo.class, "Deposit");
+//        Deposit = hardwareMap.get(Servo.class, "Deposit");
 
         RightForward.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         RightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         LeftForward.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         LeftBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        Deposit.setDirection(Servo.Direction.REVERSE);
+//        Deposit.setDirection(Servo.Direction.REVERSE);
         RightBack.setDirection(DcMotorSimple.Direction.REVERSE);
         // Turner.setDirection(Servo.Direction.REVERSE);
 
