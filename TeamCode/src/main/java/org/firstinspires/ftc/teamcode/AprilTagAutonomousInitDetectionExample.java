@@ -40,10 +40,10 @@ public class AprilTagAutonomousInitDetectionExample extends LinearOpMode
 {
     OpenCvCamera camera;
     AprilTagDetectionPipeline aprilTagDetectionPipeline;
-    private DcMotor RightForward, RightBack, LeftForward, Intake, LeftBack, Lifter;
-    public final int Forward = 0, BACKWARD = 1, LEFT = 2, RIGHT = 3, UPRIGHT= 4, UPLEFT = 5, DOWNRIGHT = 6, DOWNLEFT = 7, LRIGHT = 8, RLEFT = 9, FBACKWARD = 10, FFORWARD = 11;
+    private DcMotor RightForward, RightBack, LeftForward, LeftBack;
+    public final int FORWARD = 0, BACKWARD = 1, LEFT = 2, RIGHT = 3;
 //    private Servo Deposit;
-    Caruso c = new Caruso(hardwareMap, telemetry);
+//    Caruso c = new Caruso();
 
     static final double FEET_PER_METER = 3.28084;
 
@@ -79,7 +79,8 @@ public class AprilTagAutonomousInitDetectionExample extends LinearOpMode
         RightBack = hardwareMap.dcMotor.get("RightBack");
         LeftForward = hardwareMap.dcMotor.get("LeftFront");
         LeftBack = hardwareMap.dcMotor.get("LeftBack");
-        Lifter = hardwareMap.dcMotor.get("Lifter");
+
+//        Lifter = hardwareMap.dcMotor.get("Lifter");
 
 //        Deposit = hardwareMap.get(Servo.class, "Deposit");
 
@@ -208,26 +209,7 @@ public class AprilTagAutonomousInitDetectionExample extends LinearOpMode
              */
             configuration = 2;
         }
-        else
-        {
-            /*
-             * Insert your autonomous code here, probably using the tag pose to decide your configuration.
-             */
 
-            // e.g.
-            if(tagOfInterest.pose.x <= 20)
-            {
-                // do something
-            }
-            else if(tagOfInterest.pose.x >= 20 && tagOfInterest.pose.x <= 50)
-            {
-                // do something else
-            }
-            else if(tagOfInterest.pose.x >= 50)
-            {
-                // do something else
-            }
-        }
 
 
         /* You wouldn't have this in your autonomous, this is just to prevent the sample from ending */
