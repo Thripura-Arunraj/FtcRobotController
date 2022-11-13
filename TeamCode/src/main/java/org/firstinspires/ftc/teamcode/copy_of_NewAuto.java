@@ -223,6 +223,7 @@ public class copy_of_NewAuto extends LinearOpMode
         /* You wouldn't have this in your autonomous, this is just to prevent the sample from ending */
         if (opModeIsActive()) {
             //Move forward for 30 inches with Back distance sensors
+            moveForDistance(FORWARD, 0.2, 30.0);
             //30 inches : LB = -356, RB = 343, LF = -334, RF = -362
             //30 inches : LB = -359, RB = 356, LF = -342, RF = -368
             //Failsafe with encoder - Stop at encoder value ~340
@@ -326,17 +327,40 @@ public class copy_of_NewAuto extends LinearOpMode
     }
 
     public void moveUntilDistance(int direction, double power, double distance) {
-        // define while loop relating to distance
+        // input or misplacement error
         if(distanceSensor.getDistance(DistanceUnit.INCH) <= distance) {
             telemetry.addLine("This robot cannot move, the detected distance is less than the distance inputted in the code");
             telemetry.update();
         } else {
             StartMotors(direction, power);
         }
+
+        // define while loop relating to distance
         while(distanceSensor.getDistance(DistanceUnit.INCH) >= distance) {
             telemetry.addData("Distance to Obstruction:", distanceSensor.getDistance(DistanceUnit.INCH) + " inches");
             telemetry.update();
             if(distanceSensor.getDistance(DistanceUnit.INCH) < distance) {
+                StopMotors();
+                break;
+            }
+        }
+    }
+
+
+    public void moveForDistance(int direction, double power, double distance) {
+        // input or misplacement error
+        if(distanceSensor.getDistance(DistanceUnit.INCH) >= distance) {
+            telemetry.addLine("This robot cannot move, the detected distance is more than the distance inputted in the code");
+            telemetry.update();
+        } else {
+            StartMotors(direction, power);
+        }
+
+        // define while loop relating to distance
+        while(distanceSensor.getDistance(DistanceUnit.INCH) < distance) {
+            telemetry.addData("Distance to Obstruction:", distanceSensor.getDistance(DistanceUnit.INCH) + " inches");
+            telemetry.update();
+            if(distanceSensor.getDistance(DistanceUnit.INCH) >= distance) {
                 StopMotors();
                 break;
             }
