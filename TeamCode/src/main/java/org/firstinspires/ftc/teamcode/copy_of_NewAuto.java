@@ -28,20 +28,23 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Rotation;
 import org.openftc.apriltag.AprilTagDetection;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 
 import java.util.ArrayList;
 
 @Autonomous
-public class NewAuto extends LinearOpMode
+public class copy_of_NewAuto extends LinearOpMode
 {
     OpenCvCamera camera;
     AprilTagDetectionPipeline aprilTagDetectionPipeline;
     private DcMotor RightForward, RightBack, LeftForward, LeftBack;
+    private DistanceSensor  distanceSensor;
     public final int FORWARD = 0, BACKWARD = 1, LEFT = 2, RIGHT = 3;
 //    private Servo Deposit;
 //    Caruso c = new Caruso();
@@ -71,6 +74,7 @@ public class NewAuto extends LinearOpMode
     @Override
     public void runOpMode()
     {
+        String name_of_distance_sensor = "distance_sensor_1";
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam"), cameraMonitorViewId);
         aprilTagDetectionPipeline = new AprilTagDetectionPipeline(tagsize, fx, fy, cx, cy);
@@ -80,6 +84,8 @@ public class NewAuto extends LinearOpMode
         RightBack = hardwareMap.dcMotor.get("RightBack");
         LeftForward = hardwareMap.dcMotor.get("LeftForward");
         LeftBack = hardwareMap.dcMotor.get("LeftBack");
+        distanceSensor = hardwareMap.get(DistanceSensor.class, name_of_distance_sensor);
+
 
 //        Lifter = hardwareMap.dcMotor.get("Lifter");
 
@@ -220,13 +226,14 @@ public class NewAuto extends LinearOpMode
             //30 inches : LB = -356, RB = 343, LF = -334, RF = -362
             //30 inches : LB = -359, RB = 356, LF = -342, RF = -368
             //Failsafe with encoder - Stop at encoder value ~340
-            move(FORWARD, 18 0, 0.2);
+            move(FORWARD, 180, 0.2);
 
             if (configuration == 3) {
 
                 //Turn 90 right with IMU
                 sleep(7000);
                 //Move forward until Back distance sensors read 52 inches
+                moveUntilDistance(FORWARD, 0.2, 52.0);
                 //Failsafe with encoder
                 move(FORWARD, 120, 0.2);
             }
@@ -238,8 +245,9 @@ public class NewAuto extends LinearOpMode
                 //Turn 90 right with IMU
                 sleep(7000);
                 //Move backward until Back distance sensors read 3 inches
+                moveUntilDistance(BACKWARD, 0.2, 3.0);
                 //Failsafe with encoder
-                move(BACKWARD, 18 0, 0.2);
+                move(BACKWARD, 180, 0.2);
             }
 
         }
@@ -293,6 +301,46 @@ public class NewAuto extends LinearOpMode
         RightForward.setPower(0);
         LeftBack.setPower(0);
         RightBack.setPower(0);
+    }
+
+    public void StartMotors(int direction, double power) {
+        if(direction == FORWARD) {
+            LeftForward.setPower(power);
+            LeftBack.setPower(power);
+            RightForward.setPower(power);
+            RightBack.setPower(power);
+        } else if(direction == BACKWARD) {
+            LeftForward.setPower(-power);
+            LeftBack.setPower(-power);
+            RightForward.setPower(-power);
+            RightBack.setPower(-power);
+        }
+    }
+
+    public void StopMotors() {
+        LeftBack.setPower(0);
+        LeftForward.setPower(0);
+        RightBack.setPower(0);
+        RightForward.setPower(0);
+
+    }
+
+    public void moveUntilDistance(int direction, double power, double distance) {
+        // define while loop relating to distance
+        if(distanceSensor.getDistance(DistanceUnit.INCH) <= distance) {
+            telemetry.addLine("This robot cannot move, the detected distance is less than the distance inputted in the code");
+            telemetry.update();
+        } else {
+            StartMotors(direction, power);
+        }
+        while(distanceSensor.getDistance(DistanceUnit.INCH) >= distance) {
+            telemetry.addData("Distance to Obstruction:", distanceSensor.getDistance(DistanceUnit.INCH) + " inches");
+            telemetry.update();
+            if(distanceSensor.getDistance(DistanceUnit.INCH) < distance) {
+                StopMotors();
+                break;
+            }
+        }
     }
 
     public void moveWithTimeForward(int milliseconds) {
