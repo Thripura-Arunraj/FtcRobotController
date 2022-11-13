@@ -254,6 +254,7 @@ public class copy_of_NewAuto extends LinearOpMode
             if (configuration == 3) {
 
                 //Turn 90 right with IMU
+                rotateUntil(90.0, 0.2);
                 sleep(7000);
                 //Move forward until Back distance sensors read 52 inches
                 moveUntilDistance(FORWARD, 0.2, 52.0);
@@ -266,6 +267,7 @@ public class copy_of_NewAuto extends LinearOpMode
             else if (configuration == 1){
 
                 //Turn 90 right with IMU
+                rotateUntil(90.0, 0.2);
                 sleep(7000);
                 //Move backward until Back distance sensors read 3 inches
                 moveUntilDistance(BACKWARD, 0.2, 3.0);
