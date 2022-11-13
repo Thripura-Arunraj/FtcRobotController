@@ -21,6 +21,7 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -28,15 +29,20 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.Rotation;
 import org.openftc.apriltag.AprilTagDetection;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 import java.util.ArrayList;
+import java.util.Locale;
 
 @Autonomous
 public class copy_of_NewAuto extends LinearOpMode
@@ -45,6 +51,9 @@ public class copy_of_NewAuto extends LinearOpMode
     AprilTagDetectionPipeline aprilTagDetectionPipeline;
     private DcMotor RightForward, RightBack, LeftForward, LeftBack;
     private DistanceSensor  distanceSensor;
+    private BNO055IMU imu;
+
+    Orientation angles;
     public final int FORWARD = 0, BACKWARD = 1, LEFT = 2, RIGHT = 3;
 //    private Servo Deposit;
 //    Caruso c = new Caruso();
@@ -84,7 +93,20 @@ public class copy_of_NewAuto extends LinearOpMode
         RightBack = hardwareMap.dcMotor.get("RightBack");
         LeftForward = hardwareMap.dcMotor.get("LeftForward");
         LeftBack = hardwareMap.dcMotor.get("LeftBack");
+
         distanceSensor = hardwareMap.get(DistanceSensor.class, name_of_distance_sensor);
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+
+        parameters.mode = BNO055IMU.SensorMode.IMU;
+        parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
+        parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+        parameters.loggingEnabled = true;
+        parameters.loggingTag     = "IMU";
+
+
+        imu = hardwareMap.get(BNO055IMU.class, "imu");
+
+        imu.initialize(parameters);
 
 
 //        Lifter = hardwareMap.dcMotor.get("Lifter");
@@ -366,6 +388,30 @@ public class copy_of_NewAuto extends LinearOpMode
             }
         }
     }
+
+    public void rotateUntil(double deg, double power) {
+        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        telemetry.addData("Orientation", angles.firstAngle);
+        telemetry.update();
+
+        double newOrientation = angles.firstAngle += deg;
+
+        while(angles.firstAngle < newOrientation) {
+            LeftForward.setPower(-power);
+            LeftBack.setPower(-power);
+            RightForward.setPower(power);
+            RightBack.setPower(power);
+            if(angles.firstAngle >= newOrientation) {
+                StopMotors();
+                break;
+            }
+        }
+        telemetry.addData("Orientation", angles.firstAngle);
+        telemetry.update();
+    }
+
+
+
 
     public void moveWithTimeForward(int milliseconds) {
         double power = .2;
