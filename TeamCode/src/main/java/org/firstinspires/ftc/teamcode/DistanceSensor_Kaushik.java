@@ -27,7 +27,7 @@ public class DistanceSensor_Kaushik extends LinearOpMode {
         waitForStart();
 
         while(opModeIsActive()) {
-            telemetry.addData("Distance (cm)", distanceSensor.getDistance(DistanceUnit.CM));
+            telemetry.addData("Distance (in)", distanceSensor.getDistance(DistanceUnit.INCH));
 
             telemetry.update();
         }
